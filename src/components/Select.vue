@@ -527,7 +527,16 @@
        */
       inputId: {
         type: String
-      }
+      },
+
+      /**
+       * Enable the remove diacritics support
+       * @type {Boolean}
+       */
+      removeDiacritics: {
+        type: Boolean,
+        default: false
+      },
     },
 
     data() {
@@ -898,15 +907,28 @@
             // Optgroups - filter the optgroup values
             let optgroupOptions = option.value.filter((opt) => {
               if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
-                return this.removeDiacritics(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                if (this.removeDiacritics) {
+                  return this.removeDiacriticsFromString(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                }
+                return opt[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
               }
-              return this.removeDiacritics(opt).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+              if (this.removeDiacritics) {
+                return this.removeDiacriticsFromString(opt).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+              }
+              return opt.toLowerCase().indexOf(this.search.toLowerCase()) > -1
             })
             return optgroupOptions.length ? true : false
           } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
-            return this.removeDiacritics(option[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+            if (this.removeDiacritics) {
+              return this.removeDiacriticsFromString(option[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+            }
+            return option[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
           }
-          return this.removeDiacritics(option).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+
+          if (this.removeDiacritics) {
+            return this.removeDiacriticsFromString(option).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+          }
+          return option.toLowerCase().indexOf(this.search.toLowerCase()) > -1
         })
         if (this.taggable && this.search.length && !this.optionExists(this.search)) {
           options.unshift(this.search)

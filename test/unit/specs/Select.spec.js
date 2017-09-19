@@ -313,23 +313,23 @@ describe('Select.vue', () => {
 			expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify([{label: 'Bar', value: 'bar'}, {label: 'Baz', value: 'baz'}]))
 		})
 
-		it('should filter diacritic marked characters by substituting their non-accented versions for string comparisons', () => {
-			const vm = new Vue({
-				template: `<div><v-select ref="select" :options="['Something to filter','Ănother','ănother','Ånother','Should not appear']" v-model="value"></v-select></div>`,
-				data: {value: 'Something to filter'}
-			}).$mount()
-			vm.$refs.select.search = 'anot'
-			expect(vm.$refs.select.filteredOptions).toEqual(['Ănother','ănother','Ånother'])
-		})
+    it('should filter diacritic marked characters by substituting their non-accented versions for string comparisons when remove-diacritics prop is set to true', () => {
+      const vm = new Vue({
+        template: `<div><v-select ref="select" remove-diacritics :options="['Something to filter','Ănother','ănother','Ånother','Should not appear']" v-model="value"></v-select></div>`,
+        data: {value: 'Something to filter'}
+      }).$mount()
+      vm.$refs.select.search = 'anot'
+      expect(vm.$refs.select.filteredOptions).toEqual(['Ănother','ănother','Ånother'])
+    })
 
-		it('can filter an array of objects based on the objects label key for diacritic marked characters by substituting their non-accented versions for string comparisons', () => {
-			const vm = new Vue({
-				template: `<div><v-select ref="select" :options="[{label: 'Something to filter', value: '1'},{label: 'Ănother', value: '2'},{label: 'ănother', value: '3'},{label: 'Ånother', value: '4'},{label: 'Should not appear', value: '5'}]" v-model="value"></v-select></div>`,
-				data: {value: 'Something to filter'}
-			}).$mount()
-			vm.$refs.select.search = 'anot'
-			expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify([{label: 'Ănother', value: '2'},{label: 'ănother', value: '3'},{label: 'Ånother', value: '4'}]))
-		})
+    it('should not filter diacritic marked characters by substituting their non-accented versions when remove-diacritics prop is not set', () => {
+      const vm = new Vue({
+        template: `<div><v-select ref="select" :options="['Something to filter','Ănother','ănother','Ånother','Should not appear']" v-model="value"></v-select></div>`,
+        data: {value: 'Something to filter'}
+      }).$mount()
+      vm.$refs.select.search = 'anot'
+      expect(vm.$refs.select.filteredOptions).toEqual([])
+    })
 
     it('can organize and filter an array of objects based on the objects label key for faux-optgroup lists', () => {
       const optgroups = [
@@ -446,6 +446,33 @@ describe('Select.vue', () => {
       expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult2))
       vm.$refs.select.search = 'red'
       expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult3))
+    })
+
+    it('can organize and filter an array of objects based on the objects label key for faux-optgroup lists with remove-diacritics enabled', () => {
+      const optgroups = [
+        {label: "Unsorted Option 1", value: "uo1"},
+        {label: "Grouped Values", value: ["Ănother","ănother","Ånother"]},
+        {label: "Unsorted Option 2", value: "uo2"},
+        {label: "Unsorted Option 3", value: "uo3"}
+      ]
+
+      const expectedResult = [
+        {label: "Grouped Values", value: ["Ănother","ănother","Ånother"], optgroup: true},
+        "Ănother",
+        "ănother",
+        "Ånother"
+      ]
+
+      const vm = new Vue({
+        template: `<div><v-select remove-diacritics :options="options" ref="select" v-model="value"></v-select></div>`,
+        data: {
+          value: 'uo2',
+          options: optgroups
+        }
+      }).$mount()
+      expect(JSON.stringify(vm.$refs.select.options)).toEqual(JSON.stringify(optgroups))
+      vm.$refs.select.search = 'anot'
+      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult))
     })
 	})
 
