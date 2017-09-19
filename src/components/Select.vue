@@ -185,12 +185,18 @@
   .v-select li {
     line-height: 1.42857143; /* Normalize line height */
   }
-  .v-select li > a {
+  .v-select li > a, .v-select li > span {
     display: block;
     padding: 3px 20px;
     clear: both;
     color: #333; /* Overrides most CSS frameworks */
     white-space: nowrap;
+  }
+  .v-select li.dropdown-header > span {
+    font-weight: bold;
+  }
+  .v-select li.dropdown-header ~ li > a {
+    padding-left: 40px;
   }
   .v-select li:hover {
     cursor: pointer;
@@ -304,8 +310,11 @@
 
     <transition :name="transition">
       <ul ref="dropdownMenu" v-if="dropdownOpen" class="dropdown-menu" :style="{ 'max-height': maxHeight }">
-        <li v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ active: isOptionSelected(option), highlight: index === typeAheadPointer }" @mouseover="typeAheadPointer = index">
-          <a @mousedown.prevent="select(option)">
+        <li v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ active: isOptionSelected(option), highlight: index === typeAheadPointer, 'dropdown-header': isOptgroupOption(option) }" @mouseover="typeAheadPointer = index">
+          <span v-if="isOptgroupOption(option)">
+            {{ getOptionLabel(option) }}
+          </span>
+          <a v-if="!isOptgroupOption(option)" @mousedown.prevent="select(option)">
             {{ getOptionLabel(option) }}
           </a>
         </li>
@@ -781,6 +790,15 @@
         if (this.pushTags) {
           this.mutableOptions.push(option)
         }
+      },
+
+      /**
+       * Check if the given option is an optgroup
+       * @param  {Object|String}  option
+       * @return {Boolean}        True if option value is an object | False otherwise
+       */
+      isOptgroupOption(option) {
+        return option['optgroup'] === true
       }
     },
 
@@ -847,17 +865,47 @@
        * @return {array}
        */
       filteredOptions() {
-        let options = this.mutableOptions.filter((option) => {
-          if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
-            return this.removeDiacritics(option[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+        // Flatten the structure to fall in line with Bootstrap compatibility
+        // Unsorted options will be brought to the top of the list so they do
+        // not fall under a header
+        let flattenedOptions = [];
+        let unsortedOptions = [];
+        this.mutableOptions.forEach((option) => {
+          if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
+            this.$set(option, 'optgroup', true)
+            flattenedOptions.push(option)
+            option.value.forEach((opt) => {
+              if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
+                flattenedOptions.push(opt)
+              }
+            })
+          } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
+            unsortedOptions.push(option)
           } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
             return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+          }
+        })
+        let sortedOptions = unsortedOptions.concat(flattenedOptions);
+
+        let options = sortedOptions.filter((option) => {
+          if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
+            // Optgroups - filter the optgroup values
+            let optgroupOptions = option.value.filter((opt) => {
+              if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
+                return this.removeDiacritics(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+              }
+              return this.removeDiacritics(opt).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+            })
+            return optgroupOptions.length ? true : false
+          } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
+            return this.removeDiacritics(option[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
           }
           return this.removeDiacritics(option).toLowerCase().indexOf(this.search.toLowerCase()) > -1
         })
         if (this.taggable && this.search.length && !this.optionExists(this.search)) {
           options.unshift(this.search)
         }
+
         return options
       },
 
