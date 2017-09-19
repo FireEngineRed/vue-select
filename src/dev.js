@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import vSelect from './components/Select.vue'
 import countries from 'docs/data/advanced.js'
+import optgroups from 'docs/data/optgroups.js'
 import debounce from 'lodash/debounce'
 import resource from 'vue-resource'
 
@@ -17,6 +18,7 @@ new Vue({
     placeholder: "placeholder",
     value: null,
     options: countries,
+    optgroups: optgroups,
     ajaxRes: []
   },
   methods: {
