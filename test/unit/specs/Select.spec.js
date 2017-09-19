@@ -330,6 +330,123 @@ describe('Select.vue', () => {
 			vm.$refs.select.search = 'anot'
 			expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify([{label: 'Ănother', value: '2'},{label: 'ănother', value: '3'},{label: 'Ånother', value: '4'}]))
 		})
+
+    it('can organize and filter an array of objects based on the objects label key for faux-optgroup lists', () => {
+      const optgroups = [
+        {label: "Colors", value: [
+          {label: "Red", value: "red"},
+          {label: "Orange", value: "orange"},
+          {label: "Yellow", value: "yellow"},
+          {label: "Green", value: "green"},
+          {label: "Blue", value: "blue"},
+          {label: "Indigo", value: "indigo"},
+          {label: "Violet", value: "violet"}
+        ]},
+        {label: "Unsorted Option 1", value: "uo1"},
+        {label: "Numbers", value: ["1","2","3","4","5","6","7"]},
+        {label: "Animals", value: [
+          {label: "Cat", value: "cat"},
+          {label: "Dog", value: "dog"},
+          {label: "Rabbit", value: "rabbit"},
+          {label: "Fish", value: "fish"},
+          {label: "Lizard", value: "lizard"},
+          {label: "Mouse", value: "mouse"},
+          {label: "Spider", value: "spider"}
+        ]},
+        {label: "Unsorted Option 2", value: "uo2"},
+        {label: "Colores Españoles (Spanish Colors)", value: [
+          {label: "Roja (Red)", value: "red"},
+          {label: "Naranja (Orange)", value: "orange"},
+          {label: "Amarillo (Yellow)", value: "yellow"},
+          {label: "Verde (Green)", value: "green"},
+          {label: "Azul (Blue)", value: "blue"}
+        ]},
+        {label: "Unsorted Option 3", value: "uo3"}
+      ]
+
+      const expectedResult1 = [
+        {label: "Unsorted Option 1", value: "uo1"},
+        {label: "Unsorted Option 2", value: "uo2"},
+        {label: "Unsorted Option 3", value: "uo3"},
+        {label: "Colors", value: [
+          {label: "Red", value: "red"},
+          {label: "Orange", value: "orange"},
+          {label: "Yellow", value: "yellow"},
+          {label: "Green", value: "green"},
+          {label: "Blue", value: "blue"},
+          {label: "Indigo", value: "indigo"},
+          {label: "Violet", value: "violet"}
+        ], optgroup: true},
+        {label: "Red", value: "red"},
+        {label: "Orange", value: "orange"},
+        {label: "Green", value: "green"},
+        {label: "Animals", value: [
+          {label: "Cat", value: "cat"},
+          {label: "Dog", value: "dog"},
+          {label: "Rabbit", value: "rabbit"},
+          {label: "Fish", value: "fish"},
+          {label: "Lizard", value: "lizard"},
+          {label: "Mouse", value: "mouse"},
+          {label: "Spider", value: "spider"}
+        ], optgroup: true},
+        {label: "Rabbit", value: "rabbit"},
+        {label: "Lizard", value: "lizard"},
+        {label: "Spider", value: "spider"},
+        {label: "Colores Españoles (Spanish Colors)", value: [
+          {label: "Roja (Red)", value: "red"},
+          {label: "Naranja (Orange)", value: "orange"},
+          {label: "Amarillo (Yellow)", value: "yellow"},
+          {label: "Verde (Green)", value: "green"},
+          {label: "Azul (Blue)", value: "blue"}
+        ], optgroup: true},
+        {label: "Roja (Red)", value: "red"},
+        {label: "Naranja (Orange)", value: "orange"},
+        {label: "Amarillo (Yellow)", value: "yellow"},
+        {label: "Verde (Green)", value: "green"},
+      ]
+
+      const expectedResult2 = [
+        {label: "Unsorted Option 1", value: "uo1"},
+        {label: "Numbers", value: ["1","2","3","4","5","6","7"], optgroup: true},
+        "1"
+      ]
+
+      const expectedResult3 = [
+        {label: "Colors", value: [
+          {label: "Red", value: "red"},
+          {label: "Orange", value: "orange"},
+          {label: "Yellow", value: "yellow"},
+          {label: "Green", value: "green"},
+          {label: "Blue", value: "blue"},
+          {label: "Indigo", value: "indigo"},
+          {label: "Violet", value: "violet"}
+        ], optgroup: true},
+        {label: "Red", value: "red"},
+        {label: "Colores Españoles (Spanish Colors)", value: [
+          {label: "Roja (Red)", value: "red"},
+          {label: "Naranja (Orange)", value: "orange"},
+          {label: "Amarillo (Yellow)", value: "yellow"},
+          {label: "Verde (Green)", value: "green"},
+          {label: "Azul (Blue)", value: "blue"}
+        ], optgroup: true},
+        {label: "Roja (Red)", value: "red"}
+      ]
+
+      const vm = new Vue({
+        template: `<div><v-select :options="options" ref="select" v-model="value"></v-select></div>`,
+        data: {
+          value: 'uo2',
+          options: optgroups
+        }
+      }).$mount()
+      expect(JSON.stringify(vm.$refs.select.options)).toEqual(JSON.stringify(optgroups))
+      vm.$refs.select.search = 'r'
+      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult1))
+      vm.$refs.select.search = '1'
+      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult2))
+      vm.$refs.select.search = 'red'
+      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult3))
+    })
 	})
 
 	describe('Toggling Dropdown', () => {

@@ -868,8 +868,8 @@
         // Flatten the structure to fall in line with Bootstrap compatibility
         // Unsorted options will be brought to the top of the list so they do
         // not fall under a header
-        let flattenedOptions = [];
-        let unsortedOptions = [];
+        let flattenedOptions = []
+        let unsortedOptions = []
         this.mutableOptions.forEach((option) => {
           if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
             this.$set(option, 'optgroup', true)
@@ -877,15 +877,21 @@
             option.value.forEach((opt) => {
               if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
                 flattenedOptions.push(opt)
+              } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
+                return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+              } else {
+                flattenedOptions.push(opt)
               }
             })
           } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
             unsortedOptions.push(option)
           } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
             return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+          } else {
+            unsortedOptions.push(option)
           }
         })
-        let sortedOptions = unsortedOptions.concat(flattenedOptions);
+        const sortedOptions = unsortedOptions.concat(flattenedOptions)
 
         let options = sortedOptions.filter((option) => {
           if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
