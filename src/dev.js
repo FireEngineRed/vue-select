@@ -5,6 +5,8 @@ import optgroups from 'docs/data/optgroups.js'
 import debounce from 'lodash/debounce'
 import resource from 'vue-resource'
 
+require('../node_modules/bootstrap-sass/assets/stylesheets/_bootstrap.scss')
+
 Vue.use(resource)
 
 Vue.component('v-select', vSelect)
