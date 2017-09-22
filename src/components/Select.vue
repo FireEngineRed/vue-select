@@ -8,7 +8,12 @@
     margin: 0 20px;
   }
   /* Search Input */
-  .v-select input {
+  .v-select-search {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .v-select-search-input {
     width: 100%;
   }
   /* Dropdown Default Transition */
@@ -103,7 +108,7 @@
 
     <transition :name="transition">
       <ul ref="dropdownMenu" v-if="dropdownOpen" class="dropdown-menu" :style="{ 'max-height': maxHeight }">
-        <li>
+        <li class="v-select-search">
           <input
             ref="search"
             v-model="search"
@@ -112,7 +117,7 @@
             @keydown.up.prevent="toggleDropdown"
             @keydown.tab.shift.prevent="toggleDropdown"
             type="search"
-            class="form-control"
+            class="form-control v-select-search-input"
             :placeholder="searchPlaceholder"
             :readonly="!searchable"
             :id="inputId"
