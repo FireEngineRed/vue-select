@@ -1,4 +1,9 @@
 <style>
+  .dropdown-menu li .disabled,
+  .dropdown-menu li.highlight .disabled {
+    background-color: #f8f8f8;
+    cursor: not-allowed;
+  }
   /* Dropdown Menu */
   .v-select .dropdown-menu {
     overflow-y: scroll;
@@ -7,6 +12,7 @@
     text-align: center;
     margin: 0 20px;
   }
+
   /* Search Input */
   .v-select-search {
     padding-left: 10px;
@@ -16,6 +22,7 @@
   .v-select-search-input {
     width: 100%;
   }
+
   /* Dropdown Default Transition */
   .fade-enter-active,
   .fade-leave-active {
@@ -26,6 +33,7 @@
     opacity: 0;
   }
 
+  /* Processing Spinner */
   .processingSpinner {
       margin: 0 auto;
       width: 70px;
@@ -69,22 +77,6 @@
           -webkit-transform: scale(1.0);
       }
   }
-  /*
-  .processingSpinner {
-      background: rgba(white,.9);
-      bottom: 0;
-      display: block;
-      min-height: 150px;
-      left: 0;
-      padding-top: 100px;
-      position: absolute;
-      right: 0;
-      top: 0;
-      margin-top: 0;
-      margin-bottom: 0;
-      width: 100%;
-  }
-  */
 </style>
 
 <template>
@@ -159,7 +151,15 @@
             {{ getOptionLabel(option) }}
           </span>
           <a
-            v-if="!isOptgroupOption(option)"
+            v-else-if="isReadonlyOption(option)"
+            class="disabled"
+            :id="getFilteredOptionAnchorIDAttr(index)"
+            :tabindex="-1"
+          >
+            {{ getOptionLabel(option) }}
+          </a>
+          <a
+            v-else-if="!isOptgroupOption(option)"
             class="v-select-option"
             :id="getFilteredOptionAnchorIDAttr(index)"
             @click.prevent="select(option)"
@@ -412,6 +412,18 @@
       tabindex: {
         type: Number,
         default: 0
+      },
+
+      /**
+       * Contains an array of values to mark as
+       * readonly
+       * @type {Array}
+       */
+      readonlyValues: {
+        type: Array,
+        default() {
+          return []
+        }
       }
     },
 
@@ -781,6 +793,38 @@
           return option['value']
         }
         return option
+      },
+
+      /**
+       * Check if an option is readonly
+       */
+      isReadonlyOption(option) {
+        let opt = JSON.parse(JSON.stringify(option))
+        let matches = this.readonlyValues.filter((val) => {
+          let optionProps = Object.getOwnPropertyNames(opt)
+          let readonlyProps = Object.getOwnPropertyNames(val)
+
+          // If the property lengths don't match,
+          // not a match
+          if (optionProps.length !== readonlyProps.length) {
+            return false
+          }
+
+          // If the object property isn't found in the readonly
+          // props, they are different, filter it
+          for (let i = 0; i < optionProps.length; i += 1) {
+            if (!readonlyProps.includes(optionProps[i])) {
+              return false
+            }
+            if (opt[optionProps[i]] !== val[optionProps[i]]) {
+              return false
+            }
+          }
+
+          return true
+        })
+
+        return matches.length ? true : false
       }
     },
 
