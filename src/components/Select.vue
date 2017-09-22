@@ -88,7 +88,7 @@
 </style>
 
 <template>
-  <div class="dropdown v-select" :class="dropdownClasses">
+  <div class="dropdown v-select" :class="dropdownClasses" :id="componentIdAttr">
     <button
       type="button"
       ref="toggle"
@@ -100,14 +100,15 @@
       @keydown.tab="focusSearch"
       class="btn btn-default dropdown-toggle"
       :tabindex="tabindex + 1"
+      :id="toggleIdAttr"
     >
-      <span>{{ dropdownButtonLabel() }}</span>
+      <span :id="toggleLabelIdAttr">{{ dropdownButtonLabel() }}</span>
       <span class="caret"></span>
-
+      <input type="hidden" v-for="(option, index) in valueAsArray" v-bind:key="index" :id="getSelectedOptionIdAttr(index)" :name="getSelectedOptionNameAttr()" :value="getSelectedOptionValue(option)">
     </button>
 
     <transition :name="transition">
-      <ul ref="dropdownMenu" v-if="dropdownOpen" class="dropdown-menu" :style="{ 'max-height': maxHeight }">
+      <ul :id="dropdownMenuIdAttr" ref="dropdownMenu" v-if="dropdownOpen" class="dropdown-menu" :style="{ 'max-height': maxHeight }">
         <li class="v-select-search">
           <input
             ref="search"
@@ -118,9 +119,9 @@
             @keydown.tab.shift.prevent="toggleDropdown"
             type="search"
             class="form-control v-select-search-input"
+            :id="searchIdAttr"
             :placeholder="searchPlaceholder"
             :readonly="!searchable"
-            :id="inputId"
             aria-label="Search for option"
             :tabindex="tabindex + 2"
             v-focus
@@ -128,19 +129,20 @@
         </li>
         <li role="separator" class="divider" v-if="valueAsArray.length || mutableLoading"></li>
         <slot name="spinner">
-          <div class="processingSpinner" v-if="mutableLoading">
+          <div :id="spinnerIdAttr" class="processingSpinner" v-if="mutableLoading">
             <div class="bounce1"></div>
             <div class="bounce2"></div>
             <div class="bounce3"></div>
           </div>
         </slot>
-        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option), highlight: index === typeAheadPointer, 'dropdown-header': isOptgroupOption(option) }" @mouseover="typeAheadPointer = index">
+        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option), highlight: index === typeAheadPointer }" @mouseover="typeAheadPointer = index">
           <span v-if="isOptgroupOption(option)" tabindex="-1">
             {{ getOptionLabel(option) }}
           </span>
           <a
             v-if="!isOptgroupOption(option)"
             class="v-select-option v-select-option-selected"
+            :id="getSelectedOptionAnchorIDAttr(index)"
             @click.prevent="select(option)"
             :tabindex="tabindex + 3 + index"
             @keyup.esc="onEscape"
@@ -159,6 +161,7 @@
           <a
             v-if="!isOptgroupOption(option)"
             class="v-select-option"
+            :id="getFilteredOptionAnchorIDAttr(index)"
             @click.prevent="select(option)"
             :tabindex="tabindex + 3 + valueAsArray.length + index"
             @keyup.esc="onEscape"
@@ -169,7 +172,7 @@
             {{ getOptionLabel(option) }}
           </a>
         </li>
-        <li v-if="!filteredOptions.length && !mutableLoading" class="no-options">
+        <li v-if="!filteredOptions.length && !mutableLoading" :id="noOptionsIdAttr" class="no-options">
           <slot name="no-options">Sorry, no matching options.</slot>
         </li>
       </ul>
@@ -372,12 +375,24 @@
       },
 
       /**
+       * Sets the name (and ID if not
+       * present) of the input element.
+       * @type {String}
+       */
+      inputName: {
+        type: String,
+        default: ''
+      },
+
+      /**
        * Sets the id of the input element.
        * @type {String}
-       * @default {null}
        */
       inputId: {
-        type: String
+        type: String,
+        default() {
+          return this.inputName.replace(/\]/g, '').replace(/\[/g, '_')
+        }
       },
 
       /**
@@ -711,6 +726,61 @@
         }
 
         return 'Multiple'
+      },
+
+      /**
+       * Get the anchor ID attr for a selected option link
+       */
+      getSelectedOptionAnchorIDAttr(index) {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_selected_options_${index}`
+      },
+
+      /**
+       * Get the anchor ID attr for a filtered option link
+       */
+      getFilteredOptionAnchorIDAttr(index) {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_filtered_options_${index}`
+      },
+
+      /**
+       * Get the hidden input ID attr for a selected option link
+       */
+      getSelectedOptionIdAttr(index) {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_selected_options_input_${index}`
+      },
+
+      /**
+       * Get the hidden input name attr for a selected option link
+       */
+      getSelectedOptionNameAttr(index) {
+        if (this.inputName === '') {
+          return ''
+        }
+
+        if (this.multiple) {
+          return `${this.inputName}[]`
+        }
+
+        return `${this.inputName}`
+      },
+
+      /**
+       * Get the hidden input name attr for a selected option link
+       */
+      getSelectedOptionValue(option) {
+        if (typeof option === 'object' && option.hasOwnProperty('value')) {
+          return option['value']
+        }
+        return option
       }
     },
 
@@ -863,13 +933,93 @@
        * @return {Array}
        */
       valueAsArray() {
-        if (this.multiple && this.mutableValue) {
+        if (this.multiple && this.mutableValue && this.mutableValue instanceof Array) {
           return this.mutableValue
         } else if (this.mutableValue) {
           return [this.mutableValue]
         }
 
         return []
+      },
+
+      /**
+       * @return {String}
+       */
+      componentIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_component`
+      },
+
+      /**
+       * @return {String}
+       */
+      toggleIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_toggle`
+      },
+
+      /**
+       * @return {String}
+       */
+      toggleLabelIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_toggle_label`
+      },
+
+      /**
+       * @return {String}
+       */
+      dropdownMenuIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_dropdown_menu`
+      },
+
+      /**
+       * @return {String}
+       */
+      searchIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_search`
+      },
+
+      /**
+       * @return {String}
+       */
+      spinnerIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_processing_spinner`
+      },
+
+      /**
+       * @return {String}
+       */
+      spinnerIdattr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_processing_spinner`
+      },
+
+      /**
+       * @return {String}
+       */
+      noOptionsIdAttr() {
+        if (this.inputId === '') {
+          return ''
+        }
+        return `${this.inputId}_no_options`
       }
     },
 
