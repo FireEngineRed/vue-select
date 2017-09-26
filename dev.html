@@ -40,7 +40,7 @@
         <v-select placeholder="multiple, closeOnSelect=false" multiple :close-on-select="false" :options="['cat', 'dog', 'bear']" input-name="mapping[0][target]"></v-select>
         <v-select placeholder="unsearchable" :options="options" :searchable="false"></v-select>
         <v-select placeholder="search github.." label="full_name" @search="search" :options="ajaxRes"></v-select>
-        <v-select placeholder="optgroups" :options="optgroups" input-name="mapping[1][target]" :readonly-values="[{label: 'Blue', value: 'blue'},{label: 'Mouse', value: 'mouse'}]"></v-select>
+        <v-select placeholder="optgroups" :options="optgroups" value-key="id" optgroup-options-key="tester" label="alias" input-name="mapping[1][target]" :readonly-values="[{label: 'Blue', value: 'blue'},{label: 'Mouse', value: 'mouse'}]"></v-select>
     </div>
 </body>
 

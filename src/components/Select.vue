@@ -300,6 +300,16 @@
       },
 
       /**
+       * Tells vue-select what key to use when pulling option
+       * values when each `option` is an object.
+       * @type {String}
+       */
+      valueKey: {
+        type: String,
+        default: 'value'
+      },
+
+      /**
        * Callback to generate the label text. If {option}
        * is an object, returns option[this.label] by default.
        * @param  {Object || String} option
@@ -721,8 +731,12 @@
         const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'))
         const nodes = this.$el.querySelectorAll('.v-select-option')
         const firstTabIndex = parseInt(nodes[0].getAttribute('tabindex'))
-        if (tabIndex > firstTabIndex && document.activeElement.parentNode.previousSibling.classList) {
-          const prevIndex = document.activeElement.parentNode.previousSibling.classList.contains('dropdown-header') ? 2 : 1
+        let pSibling = document.activeElement.parentNode.previousSibling
+        if (tabIndex > firstTabIndex) {
+          let prevIndex = 1
+          while (this.$el.querySelectorAll(`.v-select-option[tabindex="${tabIndex - prevIndex}"]`)[0] === undefined) {
+            prevIndex += 1
+          }
           this.$el.querySelectorAll(`.v-select-option[tabindex="${tabIndex - prevIndex}"]`)[0].focus()
         } else if (this.$refs.search === e.target) {
           this.$refs.toggle.focus()
@@ -799,8 +813,12 @@
        * Get the hidden input name attr for a selected option link
        */
       getSelectedOptionValue(option) {
-        if (typeof option === 'object' && option.hasOwnProperty('value')) {
+        if (typeof option === 'object' && option.hasOwnProperty(this.valueKey)) {
+          return option[this.valueKey]
+        } else if (typeof option === 'object' && !option.hasOwnProperty('value')) {
           return option['value']
+        } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey)) {
+          return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.`)
         }
         return option
       },
@@ -905,22 +923,26 @@
         let flattenedOptions = []
         let unsortedOptions = []
         this.mutableOptions.forEach((option) => {
-          if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
+          if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
             this.$set(option, 'optgroup', true)
             flattenedOptions.push(option)
-            option.value.forEach((opt) => {
-              if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
+            option['options'].forEach((opt) => {
+              if (typeof opt === 'object' && opt.hasOwnProperty(this.label) && opt.hasOwnProperty(this.valueKey)) {
                 flattenedOptions.push(opt)
               } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
                 return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+              } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey) && !option.hasOwnProperty('options')) {
+                return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
               } else {
                 flattenedOptions.push(opt)
               }
             })
-          } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
+          } else if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty(this.valueKey)) {
             unsortedOptions.push(option)
           } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
             return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+          } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey)) {
+            return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
           } else {
             unsortedOptions.push(option)
           }
@@ -933,9 +955,9 @@
             return false
           }
 
-          if (typeof option === 'object' && option.hasOwnProperty(this.label) && typeof option.value === 'object') {
+          if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
             // Optgroups - filter the optgroup values
-            let optgroupOptions = option.value.filter((opt) => {
+            let optgroupOptions = option['options'].filter((opt) => {
               if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
                 if (this.removeDiacritics) {
                   return this.removeDiacriticsFromString(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
