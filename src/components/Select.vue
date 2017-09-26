@@ -1,6 +1,5 @@
 <style>
-  .dropdown-menu li .disabled,
-  .dropdown-menu li.highlight .disabled {
+  .dropdown-menu li .disabled {
     background-color: #f8f8f8;
     cursor: not-allowed;
   }
@@ -80,7 +79,7 @@
 </style>
 
 <template>
-  <div class="dropdown v-select" :class="dropdownClasses" :id="componentIdAttr">
+  <div class="btn-group v-select" :class="dropdownClasses" :id="componentIdAttr">
     <button
       type="button"
       ref="toggle"
@@ -90,7 +89,7 @@
       @keyup.esc="onEscape"
       @keydown.down.prevent="tabDown"
       @keydown.tab="focusSearch"
-      class="btn btn-default dropdown-toggle"
+      class="btn btn-sm btn-default dropdown-toggle"
       :tabindex="tabindex + 1"
       :id="toggleIdAttr"
     >
@@ -127,7 +126,7 @@
             <div class="bounce3"></div>
           </div>
         </slot>
-        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option), highlight: index === typeAheadPointer }" @mouseover="typeAheadPointer = index">
+        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option) }" @mouseover="typeAheadPointer = index">
           <span v-if="isOptgroupOption(option)" tabindex="-1">
             {{ getOptionLabel(option) }}
           </span>
@@ -146,7 +145,7 @@
           </a>
         </li>
         <li v-if="!mutableLoading" role="separator" class="divider"></li>
-        <li v-if="!mutableLoading" v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ highlight: index === typeAheadPointer, 'dropdown-header': isOptgroupOption(option) }" @mouseover="typeAheadPointer = index">
+        <li v-if="!mutableLoading" v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ 'dropdown-header': isOptgroupOption(option) }" @mouseover="typeAheadPointer = index">
           <span v-if="isOptgroupOption(option)" tabindex="-1">
             {{ getOptionLabel(option) }}
           </span>
@@ -711,7 +710,7 @@
         const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'))
         const nodes = this.$el.querySelectorAll('.v-select-option')
         const firstTabIndex = parseInt(nodes[0].getAttribute('tabindex'))
-        if (tabIndex > firstTabIndex) {
+        if (tabIndex > firstTabIndex && document.activeElement.parentNode.previousSibling.classList) {
           const prevIndex = document.activeElement.parentNode.previousSibling.classList.contains('dropdown-header') ? 2 : 1
           this.$el.querySelectorAll(`.v-select-option[tabindex="${tabIndex - prevIndex}"]`)[0].focus()
         } else if (this.$refs.search === e.target) {
