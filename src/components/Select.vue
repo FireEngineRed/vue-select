@@ -89,7 +89,8 @@
       @keyup.esc="onEscape"
       @keydown.down.prevent="tabDown"
       @keydown.tab="focusSearch"
-      class="btn btn-sm btn-default dropdown-toggle"
+      class="btn btn-default dropdown-toggle"
+      :class="dropdownButtonClasses"
       :tabindex="tabindex + 1"
       :id="toggleIdAttr"
     >
@@ -423,6 +424,16 @@
         default() {
           return []
         }
+      },
+
+      /**
+       * Additional button classes
+       * (e.g. btn-sm, btn-lg)
+       * @type {Number}
+       */
+      dropdownButtonClasses: {
+        type: String,
+        default: 'btn-md'
       }
     },
 
