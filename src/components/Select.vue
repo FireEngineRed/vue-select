@@ -1,8 +1,10 @@
 <style>
+  /* Disabled options */
   .dropdown-menu li .disabled {
     background-color: #f8f8f8;
     cursor: not-allowed;
   }
+
   /* Dropdown Menu */
   .v-select .dropdown-menu {
     overflow-y: scroll;
@@ -10,6 +12,10 @@
   .v-select .no-options {
     text-align: center;
     margin: 0 20px;
+  }
+
+  .v-select-option:hover {
+    cursor: pointer;
   }
 
   /* Search Input */
@@ -127,7 +133,7 @@
             <div class="bounce3"></div>
           </div>
         </slot>
-        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option) }" @mouseover="typeAheadPointer = index">
+        <li v-if="!mutableLoading" v-for="(option, index) in valueAsArray" v-bind:key="index" :class="{ active: isOptionSelected(option) }">
           <span v-if="isOptgroupOption(option)" tabindex="-1">
             {{ getOptionLabel(option) }}
           </span>
@@ -146,7 +152,7 @@
           </a>
         </li>
         <li v-if="!mutableLoading" role="separator" class="divider"></li>
-        <li v-if="!mutableLoading" v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ 'dropdown-header': isOptgroupOption(option) }" @mouseover="typeAheadPointer = index">
+        <li v-if="!mutableLoading" v-for="(option, index) in filteredOptions" v-bind:key="index" :class="{ 'dropdown-header': isOptgroupOption(option) }">
           <span v-if="isOptgroupOption(option)" tabindex="-1">
             {{ getOptionLabel(option) }}
           </span>
@@ -182,12 +188,11 @@
 
 <script type="text/babel">
   import pointerScroll from '../mixins/pointerScroll'
-  import typeAheadPointer from '../mixins/typeAheadPointer'
   import ajax from '../mixins/ajax'
   import removeDiacritics from '../mixins/removeDiacritics'
 
   export default {
-    mixins: [pointerScroll, typeAheadPointer, ajax, removeDiacritics],
+    mixins: [pointerScroll, ajax, removeDiacritics],
 
     directives: {
       // v-focus
@@ -853,7 +858,33 @@
         })
 
         return matches.length ? true : false
-      }
+      },
+
+      /**
+       * Determine is object or string is in the array
+       * of selected values
+       * @param {Object|String} item
+       * @param {Array}  arr
+       * @return {Boolean}
+       */
+       isItemInValuesArray(item, arr) {
+         let selectedValues = JSON.parse(JSON.stringify(this.valueAsArray))
+
+         if (typeof item === 'object' && item.hasOwnProperty(this.label) && item.hasOwnProperty(this.valueKey)) {
+           return selectedValues.some((selected) => {
+             if (typeof selected === 'object' && selected.hasOwnProperty(this.label) && selected.hasOwnProperty(this.valueKey)) {
+               return item[this.label] === selected[this.label] && item[this.valueKey] === selected[this.valueKey]
+             }
+             return false
+           })
+         }
+
+         if (selectedValues && selectedValues.includes(item)) {
+           return true
+         }
+
+         return false
+       }
     },
 
     computed: {
@@ -949,15 +980,16 @@
         })
         const sortedOptions = unsortedOptions.concat(flattenedOptions)
 
+        let selectedValues = JSON.parse(JSON.stringify(this.valueAsArray))
         let options = sortedOptions.filter((option) => {
-          // Filter out those already selected, since we are looping them differently
-          if (this.valueAsArray && this.valueAsArray.includes(option)) {
-            return false
-          }
-
           if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
             // Optgroups - filter the optgroup values
-            let optgroupOptions = option['options'].filter((opt) => {
+            let optgroupOptions = option['options'].filter((opt, index) => {
+              // Filter out those already selected, since we are looping them differently
+              let o = JSON.parse(JSON.stringify(opt))
+              if (this.isItemInValuesArray(o, selectedValues)) {
+                return false
+              }
               if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
                 if (this.removeDiacritics) {
                   return this.removeDiacriticsFromString(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
@@ -971,12 +1003,21 @@
             })
             return optgroupOptions.length ? true : false
           } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
+            // Filter out those already selected, since we are looping them differently
+            let o = JSON.parse(JSON.stringify(option))
+            if (this.isItemInValuesArray(o, selectedValues)) {
+              return false
+            }
             if (this.removeDiacritics) {
               return this.removeDiacriticsFromString(option[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
             }
             return option[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
           }
 
+          // Filter out those already selected, since we are looping them differently
+          if (this.isItemInValuesArray(o, selectedValues)) {
+            return false
+          }
           if (this.removeDiacritics) {
             return this.removeDiacriticsFromString(option).toLowerCase().indexOf(this.search.toLowerCase()) > -1
           }
