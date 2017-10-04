@@ -102,7 +102,27 @@
     >
       <span :id="toggleLabelIdAttr">{{ dropdownButtonLabel() }}</span>
       <span class="caret"></span>
-      <input type="hidden" v-for="(option, index) in valueAsArray" v-bind:key="index" :id="getSelectedOptionIdAttr(index)" :name="getSelectedOptionNameAttr()" :value="getSelectedOptionValue(option)">
+      <template v-if="valueAsArray.length">
+        <input
+          type="hidden"
+          class="v-select-selected-value"
+          :class="{ required: required }"
+          v-for="(option, index) in valueAsArray"
+          v-bind:key="index"
+          :id="getSelectedOptionIdAttr(index)"
+          :name="getSelectedOptionNameAttr()"
+          :value="getSelectedOptionValue(option)"
+        >
+      </template>
+      <input
+        type="hidden"
+        class="v-select-selected-value"
+        :class="{ required: required }"
+        v-else-if="!valueAsArray.length"
+        :id="getSelectedOptionIdAttr(0)"
+        :name="getSelectedOptionNameAttr()"
+        value=""
+      >
     </button>
 
     <transition :name="transition">
@@ -226,6 +246,16 @@
         default() {
           return []
         },
+      },
+
+      /**
+       * Dictate whether or not the element is required for input
+       * validation purposes
+       * @type {Boolean}
+       */
+      required: {
+        type: Boolean,
+        default: false
       },
 
       /**
@@ -900,7 +930,8 @@
           searching: this.searching,
           searchable: this.searchable,
           unsearchable: !this.searchable,
-          loading: this.mutableLoading
+          loading: this.mutableLoading,
+          required: this.required
         }
       },
 
