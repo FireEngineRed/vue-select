@@ -198,7 +198,7 @@
             {{ getOptionLabel(option) }}
           </a>
         </li>
-        <li v-if="!filteredOptions.length && !mutableLoading" :id="noOptionsIdAttr" class="no-options">
+        <li v-if="filteredOptions === undefined || !filteredOptions.length && !mutableLoading" :id="noOptionsIdAttr" class="no-options">
           <slot name="no-options">Sorry, no matching options.</slot>
         </li>
       </ul>
@@ -600,7 +600,7 @@
               ref = val
             }
           })
-          var index = this.mutableValue.indexOf(ref)
+          let index = this.mutableValue.indexOf(ref)
           this.mutableValue.splice(index, 1)
         } else {
           this.mutableValue = null
@@ -984,61 +984,63 @@
         // not fall under a header
         let flattenedOptions = []
         let unsortedOptions = []
-        console.log(this.mutableOptions)
-        this.mutableOptions.forEach((option) => {
-          if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
-            console.log('alan1', typeof option, option)
-            this.$set(option, 'optgroup', true)
-            flattenedOptions.push(option)
-            option['options'].forEach((opt) => {
-              if (typeof opt === 'object' && opt.hasOwnProperty(this.label) && opt.hasOwnProperty(this.valueKey)) {
-                flattenedOptions.push(opt)
-              } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
-                return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
-              } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey) && !option.hasOwnProperty('options')) {
-                return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
-              } else {
-                flattenedOptions.push(opt)
+        for (let prop in this.mutableOptions) {
+          if (this.mutableOptions.hasOwnProperty(prop)) {
+            let option = this.mutableOptions[prop]
+            if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
+              this.$set(option, 'optgroup', true)
+              flattenedOptions.push(option)
+              for (let p in option['options']) {
+                if (option['options'].hasOwnProperty(p)) {
+                  let opt = option['options'][p]
+
+                  if (typeof opt === 'object' && opt.hasOwnProperty(this.label) && opt.hasOwnProperty(this.valueKey)) {
+                    flattenedOptions.push(opt)
+                  } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
+                    return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+                  } else {
+                    flattenedOptions.push(opt)
+                  }
+                }
               }
-            })
-          } else if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty(this.valueKey)) {
-            console.log('alan2', typeof option, option)
-            unsortedOptions.push(option)
-          } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
-            console.log('alan3', typeof option, option)
-            return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
-          } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey)) {
-            console.log('alan4', typeof option, option)
-            return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
-          } else {
-            console.log('alan5', typeof option, option)
-            unsortedOptions.push(option)
+            } else if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty(this.valueKey)) {
+              unsortedOptions.push(option)
+            } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
+              return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+            } else {
+              unsortedOptions.push(option)
+            }
           }
-        })
+        }
         const sortedOptions = unsortedOptions.concat(flattenedOptions)
 
         let selectedValues = JSON.parse(JSON.stringify(this.valueAsArray))
         let options = sortedOptions.filter((option) => {
           if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
             // Optgroups - filter the optgroup values
-            let optgroupOptions = option['options'].filter((opt, index) => {
-              // Filter out those already selected, since we are looping them differently
-              let o = JSON.parse(JSON.stringify(opt))
-              if (this.isItemInValuesArray(o, selectedValues)) {
-                return false
-              }
-              if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
-                if (this.removeDiacritics) {
-                  return this.removeDiacriticsFromString(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+            let found = false
+            for (let index in option['options']) {
+              if (option['options'].hasOwnProperty(index)) {
+                let opt = option['options'][index]
+                if (typeof opt === 'object' && opt.hasOwnProperty(this.label)) {
+                  if (this.removeDiacritics) {
+                    found = this.removeDiacriticsFromString(opt[this.label]).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                  } else {
+                    found = opt[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                  }
+                } else if (typeof opt !== 'object') {
+                  if (this.removeDiacritics) {
+                    found = this.removeDiacriticsFromString(opt).toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                  } else {
+                    found = opt.toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                  }
                 }
-                return opt[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                if (found) {
+                  return found
+                }
               }
-              if (this.removeDiacritics) {
-                return this.removeDiacriticsFromString(opt).toLowerCase().indexOf(this.search.toLowerCase()) > -1
-              }
-              return opt.toLowerCase().indexOf(this.search.toLowerCase()) > -1
-            })
-            return optgroupOptions.length ? true : false
+            }
+            return false
           } else if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
             // Filter out those already selected, since we are looping them differently
             let o = JSON.parse(JSON.stringify(option))

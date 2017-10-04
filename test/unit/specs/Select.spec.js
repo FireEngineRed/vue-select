@@ -945,8 +945,8 @@ describe('Select.vue', () => {
 				template: '<div><v-select label="name" :options="options" v-model="value" :multiple="true"></v-select></div>',
 				components: {vSelect},
 				data: {
-					value: [{name: 'Baz'}],
-					options: [{name: 'Foo'}, {name: 'Baz'}]
+					value: [{ name: 'Baz', value: 'b' }],
+					options: [{ name: 'Foo', value: 'f' }, { name: 'Baz', value: 'b' }]
 				}
 			}).$mount()
 			vm.$children[0].open = true
@@ -962,7 +962,7 @@ describe('Select.vue', () => {
 				template: '<div><v-select :options="options"></v-select></div>',
 				components: {vSelect},
 				data: {
-					options: [{ test: 'Should Fail' }]
+					options: [{ test: 'Should Fail', value: 'blah' }]
 				}
 			}).$mount()
 			vm.$children[0].open = true
@@ -980,7 +980,7 @@ describe('Select.vue', () => {
 				template: '<div><v-select :options="options" placeholder="foo"></v-select></div>',
 				components: {vSelect},
 				data: {
-					options: [{label: 'one'}]
+					options: [{ label: 'one', value: '1' }]
 				}
 			}).$mount()
 
@@ -1076,8 +1076,8 @@ describe('Select.vue', () => {
 				template: '<div><v-select :options="options" :value="value" :multiple="true" taggable></v-select></div>',
 				components: {vSelect},
 				data: {
-					value: [{label: 'one'}],
-					options: [{label: 'one'}]
+					value: [{ label: 'one', value: '1' }],
+					options: [{ label: 'one', value: '1' }]
 				}
 			}).$mount()
 
@@ -1088,7 +1088,7 @@ describe('Select.vue', () => {
 					const options = vm.$children[0].$el.querySelectorAll('a.v-select-option')
 					options[options.length - 1].click()
 					vm.$nextTick(() => {
-						expect(vm.$children[0].mutableValue).toEqual([{label: 'one'}, {label: 'two'}])
+						expect(vm.$children[0].mutableValue).toEqual([{ label: 'one', value: '1' }, {label: 'two'}])
 						done()
 					})
 				})
@@ -1191,13 +1191,13 @@ describe('Select.vue', () => {
 				template: '<div><v-select :options="options" :value="value" :multiple="true" taggable></v-select></div>',
 				components: {vSelect},
 				data: {
-					value: [{label: 'one'}],
-					options: [{label: 'one'}]
+					value: [{ label: 'one', value: '1' }],
+					options: [{ label: 'one', value: '1' }]
 				}
 			}).$mount()
-			vm.$children[0].mutableOptions = [{label: 'two'}]
+			vm.$children[0].mutableOptions = [{ label: 'two', value: '2' }]
 			vm.$nextTick(() => {
-				expect(vm.$children[0].mutableValue).toEqual([{label: 'one'}])
+				expect(vm.$children[0].mutableValue).toEqual([{ label: 'one', value: '1' }])
 				done()
 			})
 		})
