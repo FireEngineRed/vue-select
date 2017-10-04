@@ -984,8 +984,10 @@
         // not fall under a header
         let flattenedOptions = []
         let unsortedOptions = []
+        console.log(this.mutableOptions)
         this.mutableOptions.forEach((option) => {
           if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty('options') && typeof option['options'] === 'object') {
+            console.log('alan1', typeof option, option)
             this.$set(option, 'optgroup', true)
             flattenedOptions.push(option)
             option['options'].forEach((opt) => {
@@ -1000,12 +1002,16 @@
               }
             })
           } else if (typeof option === 'object' && option.hasOwnProperty(this.label) && option.hasOwnProperty(this.valueKey)) {
+            console.log('alan2', typeof option, option)
             unsortedOptions.push(option)
           } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
+            console.log('alan3', typeof option, option)
             return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
           } else if (typeof option === 'object' && !option.hasOwnProperty(this.valueKey)) {
+            console.log('alan4', typeof option, option)
             return console.warn(`[vue-select warn]: Value key "option.${this.valueKey}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
           } else {
+            console.log('alan5', typeof option, option)
             unsortedOptions.push(option)
           }
         })
@@ -1046,7 +1052,7 @@
           }
 
           // Filter out those already selected, since we are looping them differently
-          if (this.isItemInValuesArray(o, selectedValues)) {
+          if (this.isItemInValuesArray(option, selectedValues)) {
             return false
           }
           if (this.removeDiacritics) {

@@ -388,7 +388,7 @@ describe('Select.vue', () => {
 
     it('can organize and filter an array of objects based on the objects label key for faux-optgroup lists', () => {
       const optgroups = [
-        {label: "Colors", value: [
+        {label: "Colors", options: [
           {label: "Red", value: "red"},
           {label: "Orange", value: "orange"},
           {label: "Yellow", value: "yellow"},
@@ -398,8 +398,8 @@ describe('Select.vue', () => {
           {label: "Violet", value: "violet"}
         ]},
         {label: "Unsorted Option 1", value: "uo1"},
-        {label: "Numbers", value: ["1","2","3","4","5","6","7"]},
-        {label: "Animals", value: [
+        {label: "Numbers", options: ["1","2","3","4","5","6","7"]},
+        {label: "Animals", options: [
           {label: "Cat", value: "cat"},
           {label: "Dog", value: "dog"},
           {label: "Rabbit", value: "rabbit"},
@@ -409,7 +409,7 @@ describe('Select.vue', () => {
           {label: "Spider", value: "spider"}
         ]},
         {label: "Unsorted Option 2", value: "uo2"},
-        {label: "Colores Españoles (Spanish Colors)", value: [
+        {label: "Colores Españoles (Spanish Colors)", options: [
           {label: "Roja (Red)", value: "red"},
           {label: "Naranja (Orange)", value: "orange"},
           {label: "Amarillo (Yellow)", value: "yellow"},
@@ -423,7 +423,7 @@ describe('Select.vue', () => {
         {label: "Unsorted Option 1", value: "uo1"},
         {label: "Unsorted Option 2", value: "uo2"},
         {label: "Unsorted Option 3", value: "uo3"},
-        {label: "Colors", value: [
+        {label: "Colors", options: [
           {label: "Red", value: "red"},
           {label: "Orange", value: "orange"},
           {label: "Yellow", value: "yellow"},
@@ -435,7 +435,7 @@ describe('Select.vue', () => {
         {label: "Red", value: "red"},
         {label: "Orange", value: "orange"},
         {label: "Green", value: "green"},
-        {label: "Animals", value: [
+        {label: "Animals", options: [
           {label: "Cat", value: "cat"},
           {label: "Dog", value: "dog"},
           {label: "Rabbit", value: "rabbit"},
@@ -447,7 +447,7 @@ describe('Select.vue', () => {
         {label: "Rabbit", value: "rabbit"},
         {label: "Lizard", value: "lizard"},
         {label: "Spider", value: "spider"},
-        {label: "Colores Españoles (Spanish Colors)", value: [
+        {label: "Colores Españoles (Spanish Colors)", options: [
           {label: "Roja (Red)", value: "red"},
           {label: "Naranja (Orange)", value: "orange"},
           {label: "Amarillo (Yellow)", value: "yellow"},
@@ -462,12 +462,12 @@ describe('Select.vue', () => {
 
       const expectedResult2 = [
         {label: "Unsorted Option 1", value: "uo1"},
-        {label: "Numbers", value: ["1","2","3","4","5","6","7"], optgroup: true},
+        {label: "Numbers", options: ["1","2","3","4","5","6","7"], optgroup: true},
         "1"
       ]
 
       const expectedResult3 = [
-        {label: "Colors", value: [
+        {label: "Colors", options: [
           {label: "Red", value: "red"},
           {label: "Orange", value: "orange"},
           {label: "Yellow", value: "yellow"},
@@ -477,7 +477,7 @@ describe('Select.vue', () => {
           {label: "Violet", value: "violet"}
         ], optgroup: true},
         {label: "Red", value: "red"},
-        {label: "Colores Españoles (Spanish Colors)", value: [
+        {label: "Colores Españoles (Spanish Colors)", options: [
           {label: "Roja (Red)", value: "red"},
           {label: "Naranja (Orange)", value: "orange"},
           {label: "Amarillo (Yellow)", value: "yellow"},
@@ -496,23 +496,29 @@ describe('Select.vue', () => {
       }).$mount()
       expect(JSON.stringify(vm.$refs.select.options)).toEqual(JSON.stringify(optgroups))
       vm.$refs.select.search = 'r'
-      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult1))
-      vm.$refs.select.search = '1'
-      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult2))
-      vm.$refs.select.search = 'red'
-      expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult3))
+			vm.$nextTick(() => {
+				expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult1))
+				vm.$refs.select.search = '1'
+				vm.$nextTick(() => {
+					expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult2))
+					vm.$refs.select.search = 'red'
+					vm.$nextTick(() => {
+						expect(JSON.stringify(vm.$refs.select.filteredOptions)).toEqual(JSON.stringify(expectedResult3))
+					})
+				})
+			})
     })
 
     it('can organize and filter an array of objects based on the objects label key for faux-optgroup lists with remove-diacritics enabled', () => {
       const optgroups = [
         {label: "Unsorted Option 1", value: "uo1"},
-        {label: "Grouped Values", value: ["Ănother","ănother","Ånother"]},
+        {label: "Grouped Values", options: ["Ănother","ănother","Ånother"]},
         {label: "Unsorted Option 2", value: "uo2"},
         {label: "Unsorted Option 3", value: "uo3"}
       ]
 
       const expectedResult = [
-        {label: "Grouped Values", value: ["Ănother","ănother","Ånother"], optgroup: true},
+        {label: "Grouped Values", options: ["Ănother","ănother","Ånother"], optgroup: true},
         "Ănother",
         "ănother",
         "Ånother"
@@ -691,7 +697,9 @@ describe('Select.vue', () => {
 		})
 	})
 
-	describe('Moving the Typeahead Pointer', () => {
+	// NOTE this is no longer necessary with the search no longer using the
+	// typeAheadPointer
+	xdescribe('Moving the Typeahead Pointer', () => {
 		it('should set the pointer to zero when the filteredOptions change', (done) => {
 			const vm = new Vue({
 				template: '<div><v-select :options="options"></v-select></div>',
@@ -708,9 +716,7 @@ describe('Select.vue', () => {
 			})
 		})
 
-		// NOTE this is no longer necessary with the search no longer holding
-		// selected items
-		xit('should move the pointer visually up the list on up arrow keyDown', () => {
+		it('should move the pointer visually up the list on up arrow keyDown', () => {
 			const vm = new Vue({
 				template: '<div><v-select :options="options"></v-select></div>',
 				components: {vSelect},
@@ -725,9 +731,7 @@ describe('Select.vue', () => {
 			expect(vm.$children[0].typeAheadPointer).toEqual(0)
 		})
 
-		// NOTE this is no longer necessary with the search no longer holding
-		// selected items
-		xit('should move the pointer visually down the list on down arrow keyDown', () => {
+		it('should move the pointer visually down the list on down arrow keyDown', () => {
 			const vm = new Vue({
 				template: '<div><v-select :options="options"></v-select></div>',
 				components: {vSelect},
@@ -741,9 +745,7 @@ describe('Select.vue', () => {
 			expect(vm.$children[0].typeAheadPointer).toEqual(2)
 		})
 
-		// NOTE this is no longer necessary with the search no longer holding
-		// selected items
-		xit('should not move the pointer past the end of the list', () => {
+		it('should not move the pointer past the end of the list', () => {
 			const vm = new Vue({
 				template: '<div><v-select :options="options"></v-select></div>',
 				components: {vSelect},
@@ -957,9 +959,14 @@ describe('Select.vue', () => {
 		it('will console.warn when options contain objects without a valid label key', (done) => {
 			spyOn(console, 'warn')
 			const vm = new Vue({
-				template: '<div><v-select :options="[{}]"></v-select></div>',
+				template: '<div><v-select :options="options"></v-select></div>',
+				components: {vSelect},
+				data: {
+					options: [{ test: 'Should Fail' }]
+				}
 			}).$mount()
-			Vue.nextTick(() => {
+			vm.$children[0].open = true
+			vm.$nextTick(() => {
 				expect(console.warn).toHaveBeenCalledWith(
 						'[vue-select warn]: Label key "option.label" does not exist in options object.' +
 						'\nhttp://sagalbot.github.io/vue-select/#ex-labels'
