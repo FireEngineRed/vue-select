@@ -860,34 +860,17 @@
 
       /**
        * Check if an option is readonly
+       *
+       * @param {Object} opt
+       * @return {Boolean}
        */
       isReadonlyOption(option) {
-        let opt = JSON.parse(JSON.stringify(option))
-        let matches = this.readonlyValues.filter((val) => {
-          let optionProps = Object.getOwnPropertyNames(opt)
-          let readonlyProps = Object.getOwnPropertyNames(val)
-
-          // If the property lengths don't match,
-          // not a match
-          if (optionProps.length !== readonlyProps.length) {
-            return false
+        for (let i = 0; i < this.readonlyValues.length; i += 1) {
+          if (JSON.stringify(option) === JSON.stringify(this.readonlyValues[i])) {
+            return true
           }
-
-          // If the object property isn't found in the readonly
-          // props, they are different, filter it
-          for (let i = 0; i < optionProps.length; i += 1) {
-            if (!readonlyProps.includes(optionProps[i])) {
-              return false
-            }
-            if (opt[optionProps[i]] !== val[optionProps[i]]) {
-              return false
-            }
-          }
-
-          return true
-        })
-
-        return matches.length ? true : false
+        }
+        return false
       },
 
       /**
