@@ -745,9 +745,9 @@
           }
         }
 
-        const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'))
+        const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'), 10)
         const nodes = this.$el.querySelectorAll('.v-select-option')
-        const lastTabIndex = parseInt(nodes[nodes.length - 1].getAttribute('tabindex'))
+        const lastTabIndex = parseInt(nodes[nodes.length - 1].getAttribute('tabindex'), 10)
         if (tabIndex < lastTabIndex) {
           let nextIndex = 1
           while (this.$el.querySelectorAll(`.v-select-option[tabindex="${tabIndex + nextIndex}"]`)[0] === undefined) {
@@ -763,9 +763,9 @@
        * @return {void}
        */
       tabUp(e) {
-        const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'))
+        const tabIndex = parseInt(document.activeElement.getAttribute('tabindex'), 10)
         const nodes = this.$el.querySelectorAll('.v-select-option')
-        const firstTabIndex = parseInt(nodes[0].getAttribute('tabindex'))
+        const firstTabIndex = parseInt(nodes[0].getAttribute('tabindex'), 10)
         let pSibling = document.activeElement.parentNode.previousSibling
         if (tabIndex > firstTabIndex) {
           let prevIndex = 1
