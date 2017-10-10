@@ -85,7 +85,7 @@
 </style>
 
 <template>
-  <div class="btn-group v-select" :class="dropdownClasses" :id="componentIdAttr">
+  <div v-click-outside="closeOnBlur" class="btn-group v-select" :class="dropdownClasses" :id="componentIdAttr">
     <button
       type="button"
       ref="toggle"
@@ -198,7 +198,7 @@
             {{ getOptionLabel(option) }}
           </a>
         </li>
-        <li v-if="filteredOptions === undefined || !filteredOptions.length && !mutableLoading" :id="noOptionsIdAttr" class="no-options">
+        <li ref="noOptions" v-if="filteredOptions === undefined || !filteredOptions.length && !mutableLoading" :id="noOptionsIdAttr" class="no-options">
           <slot name="no-options">Sorry, no matching options.</slot>
         </li>
       </ul>
@@ -207,18 +207,48 @@
 </template>
 
 <script type="text/babel">
-  import pointerScroll from '../mixins/pointerScroll'
   import ajax from '../mixins/ajax'
   import removeDiacritics from '../mixins/removeDiacritics'
 
   export default {
-    mixins: [pointerScroll, ajax, removeDiacritics],
+    mixins: [ajax, removeDiacritics],
 
     directives: {
       // v-focus
       focus: {
         inserted: function (el) {
           el.focus()
+        }
+      },
+
+      // v-click-outside
+      'click-outside': {
+        bind: function(el, binding, vNode) {
+          // Provided expression must evaluate to a function.
+          if (typeof binding.value !== 'function') {
+            const compName = vNode.context.name
+            let warn = `[Vue-click-outside:] provided expression '${binding.expression}' is not a function, but has to be`
+            if (compName) { warn += `Found in component '${compName}'` }
+
+            console.warn(warn)
+          }
+          // Define Handler and cache it on the element
+          const bubble = binding.modifiers.bubble
+          const handler = (e) => {
+            if (bubble || (!el.contains(e.target) && el !== e.target)) {
+              binding.value(e)
+            }
+          }
+          el.__vueClickOutside__ = handler
+
+          // add Event Listeners
+          document.addEventListener('click', handler)
+        },
+
+        unbind: function(el, binding) {
+          // Remove Event Listeners
+          document.removeEventListener('click', el.__vueClickOutside__)
+          el.__vueClickOutside__ = null
         }
       }
     },
@@ -637,6 +667,18 @@
           this.$refs.toggle.focus()
         } else {
           this.open = true
+        }
+      },
+
+      /**
+       * Close the dropdown on blur of elements within
+       * @param  {Event} e
+       * @return {void}
+       */
+      closeOnBlur(e) {
+        this.open = false
+        if (this.clearSearchOnSelect) {
+          this.search = ''
         }
       },
 
