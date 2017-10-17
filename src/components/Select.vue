@@ -5,6 +5,17 @@
     cursor: not-allowed;
   }
 
+  /* Input Label */
+  .v-select-label-span {
+    float: left;
+    width: 97%;
+    display: inline-block;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   /* Dropdown Menu */
   .v-select .dropdown-menu {
     overflow-y: scroll;
@@ -85,7 +96,7 @@
 </style>
 
 <template>
-  <div v-click-outside="closeOnBlur" class="btn-group v-select" :class="dropdownClasses" :id="componentIdAttr">
+  <div v-click-outside="closeOnBlur" class="btn-block v-select" :class="dropdownClasses" :id="componentIdAttr">
     <button
       type="button"
       ref="toggle"
@@ -95,12 +106,12 @@
       @keyup.esc="onEscape"
       @keydown.down.prevent="tabDown"
       @keydown.tab="focusSearch"
-      class="btn btn-default dropdown-toggle"
+      class="btn-block btn btn-default dropdown-toggle"
       :class="dropdownButtonClasses"
       :tabindex="tabindex + 1"
       :id="toggleIdAttr"
     >
-      <span :id="toggleLabelIdAttr">{{ dropdownButtonLabel() }}</span>
+      <span class="v-select-label-span" :id="toggleLabelIdAttr">{{ dropdownButtonLabel() }}</span>
       <span class="caret"></span>
       <template v-if="valueAsArray.length">
         <input
