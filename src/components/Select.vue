@@ -918,12 +918,7 @@
        * @return {Boolean}
        */
       isReadonlyOption(option) {
-        for (let i = 0; i < this.readonlyValues.length; i += 1) {
-          if (JSON.stringify(option) === JSON.stringify(this.readonlyValues[i])) {
-            return true
-          }
-        }
-        return false
+        return JSON.stringify(this.readonlyValues).indexOf(JSON.stringify(option)) !== -1
       },
 
       /**
