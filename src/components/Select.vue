@@ -418,6 +418,19 @@
       },
 
       /**
+       * An optional callback function that is called each time the dropdown
+       * is opened.
+       * @type {Function}
+       * @default {null}
+       */
+      onOpen: {
+        type: Function,
+        default: function (flag) {
+          this.$emit('open', flag)
+        }
+      },
+
+      /**
        * Enable/disable creating options from searchInput.
        * @type {Boolean}
        */
@@ -586,7 +599,7 @@
        */
       multiple(val) {
 				this.mutableValue = val ? [] : null
-      }
+      },
     },
 
     /**
@@ -602,6 +615,15 @@
     },
 
     methods: {
+      /**
+       * Open or close the dropdown and fire off the onOpen callback
+       * @param  {Boolean} flag
+       * @return {void}
+       */
+      toggleOpen(flag) {
+        this.open = flag;
+        this.onOpen(flag);
+      },
 
       /**
        * Select a given option.
@@ -655,7 +677,7 @@
        */
       onAfterSelect(option) {
         if (this.closeOnSelect) {
-          this.open = !this.open
+          this.toggleOpen(!this.open)
           this.$refs.toggle.focus()
         }
 
@@ -671,13 +693,13 @@
        */
       toggleDropdown(e) {
         if (this.open) {
-          this.open = false
+          this.toggleOpen(false)
           if (this.clearSearchOnSelect) {
             this.search = ''
           }
           this.$refs.toggle.focus()
         } else {
-          this.open = true
+          this.toggleOpen(true)
         }
       },
 
@@ -687,7 +709,7 @@
        * @return {void}
        */
       closeOnBlur(e) {
-        this.open = false
+        this.toggleOpen(false)
         if (this.clearSearchOnSelect) {
           this.search = ''
         }
@@ -724,7 +746,7 @@
        */
       onEscape() {
         this.search = ''
-        this.open = false
+        this.toggleOpen(false)
       },
 
       /**
@@ -793,7 +815,7 @@
           if (this.open) {
             this.$refs.search.focus()
           } else {
-            this.open = true
+            this.toggleOpen(true)
             return;
           }
         }
