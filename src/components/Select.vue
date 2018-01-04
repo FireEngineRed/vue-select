@@ -1,6 +1,6 @@
 <style>
   /* Disabled options */
-  .dropdown-menu li .disabled {
+  .v-select .dropdown-menu li .disabled {
     background-color: #f8f8f8;
     cursor: not-allowed;
   }
@@ -40,51 +40,51 @@
   }
 
   /* Dropdown Default Transition */
-  .fade-enter-active,
-  .fade-leave-active {
+  .v-select-transition-enter-active,
+  .v-select-transition-leave-active {
     transition: opacity .15s cubic-bezier(1.0, 0.5, 0.8, 1.0);
   }
-  .fade-enter,
-  .fade-leave-to {
+  .v-select-transition-enter,
+  .v-select-transition-leave-to {
     opacity: 0;
   }
 
   /* Processing Spinner */
-  .processingSpinner {
+  .v-select .loadingSpinner {
       margin: 0 auto;
       width: 70px;
       text-align: center;
   }
 
-  .processingSpinner > div {
+  .v-select .loadingSpinner > div {
       width: 18px;
       height: 18px;
       background-color: #343d41;
       border-radius: 100%;
       display: inline-block;
-      -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
-      animation: bouncedelay 1.4s infinite ease-in-out;
+      -webkit-animation: vSelectBounceDelay 1.4s infinite ease-in-out;
+      animation: vSelectBounceDelay 1.4s infinite ease-in-out;
       /* Prevent first frame from flickering when animation starts */
       -webkit-animation-fill-mode: both;
       animation-fill-mode: both;
   }
 
-  .processingSpinner .bounce1 {
+  .v-select .loadingSpinner .bounce1 {
       -webkit-animation-delay: -0.32s;
       animation-delay: -0.32s;
   }
 
-  .processingSpinner .bounce2 {
+  .v-select .loadingSpinner .bounce2 {
       -webkit-animation-delay: -0.16s;
       animation-delay: -0.16s;
   }
 
-  @-webkit-keyframes bouncedelay {
+  @-webkit-keyframes vSelectBounceDelay {
       0%, 80%, 100% { -webkit-transform: scale(0.0) }
       40% { -webkit-transform: scale(1.0) }
   }
 
-  @keyframes bouncedelay {
+  @keyframes vSelectBounceDelay {
       0%, 80%, 100% {
           transform: scale(0.0);
           -webkit-transform: scale(0.0);
@@ -158,7 +158,7 @@
         </li>
         <li role="separator" class="divider" v-if="valueAsArray.length || mutableLoading"></li>
         <slot name="spinner">
-          <div :id="spinnerIdAttr" class="processingSpinner" v-if="mutableLoading">
+          <div :id="spinnerIdAttr" class="loadingSpinner" v-if="mutableLoading">
             <div class="bounce1"></div>
             <div class="bounce2"></div>
             <div class="bounce3"></div>
@@ -343,7 +343,7 @@
        */
       transition: {
         type: String,
-        default: 'fade'
+        default: 'v-select-transition'
       },
 
       /**
