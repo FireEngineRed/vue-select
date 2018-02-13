@@ -528,12 +528,21 @@
       /**
        * Additional button classes
        * (e.g. btn-sm, btn-lg)
-       * @type {Number}
+       * @type {String}
        */
-      dropdownButtonClasses: {
+      buttonClasses: {
         type: String,
         default: 'btn-md'
-      }
+      },
+
+      /**
+       * Mark the button/dropdown as readonly
+       * @type {Boolean}
+       */
+      readonly: {
+        type: Boolean,
+        default: false,
+      },
     },
 
     data() {
@@ -621,8 +630,12 @@
        * @return {void}
        */
       toggleOpen(flag) {
-        this.open = flag;
-        this.onOpen(flag);
+        if (this.readonly) {
+          this.open = false;
+        } else {
+          this.open = flag;
+          this.onOpen(flag);
+        }
       },
 
       /**
@@ -986,6 +999,25 @@
           loading: this.mutableLoading,
           required: this.required
         }
+      },
+
+      /**
+       * Classes to be applied to the <button> element
+       * @return {Object}
+       */
+      dropdownButtonClasses() {
+        const classes = {};
+        const classKeys = this.buttonClasses.split(' ');
+
+        classKeys.forEach((key) => {
+          classes[key] = true;
+        });
+
+        if (this.readonly) {
+          classes.disabled = true;
+        }
+
+        return classes;
       },
 
       /**
